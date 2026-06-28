@@ -1,0 +1,190 @@
+﻿@model UriModel;
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+@section Styles{
+    <style>
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px rgb(192 133 82 / 0) inset !important;
+            -webkit-text-fill-color: #4B2E2B !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+
+
+        #btnFetch {
+            width: 300px;
+        }
+
+        .btnBrown {
+            padding-block: 7px;
+            background-color: #C08552;
+            border: 1px #C08552 solid;
+            border-radius: 10px;
+            color: #FFF8F0;
+            font-weight: 600;
+            transition: all .2s ease-in-out;
+        }
+
+        .btnBrown:hover {
+            background-color: rgba(192, 133, 82, 0.1);
+            color: #8C5A3C;
+            border: 1px solid #8C5A3C;
+        }
+
+        #userInput {
+            width: 300px;
+            border: none;
+            border-bottom: 1px solid #8C5A3C;
+            border-radius: 5px 5px 0px 0px;
+            background-color: rgb(192 133 82 / 0.15);
+            color: #4B2E2B !important;
+        }
+
+        #userInput:focus {
+            outline: none;
+            box-shadow: none;
+            border-bottom: 2px solid #8C5A3C;
+            background-color: rgb(192 133 82 / 0.25);
+        }
+
+        label {
+            margin-bottom: 5px;
+            color: #8C5A3C;
+            font-weight: bold;
+            font-size: 22px;
+            font-family: "DM Sans", sans-serif;
+        }
+
+        #listContainer {
+            max-height: calc(100vh - 60px);
+        }
+
+        #placeholderContainer {
+            padding-inline: 60px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #8C5A3C;
+            color: #8C5A3C;
+            font-size: 30px;
+            font-weight: 500;
+            font-family: "DM Sans", sans-serif;
+        }
+
+        .folder-tree-wrapper {
+            width: 100% !important;
+            max-width: 600px !important;
+            margin-block: 30px !important;
+            padding: 25px;
+            border-radius: 10px;
+            background-color: rgb(192 133 82 / 0.45) !important;
+            box-shadow: 0 .125rem .25rem rgb(0 0 0 / 0.075) !important;
+
+            h5 {
+                border-bottom: 1px solid #8C5A3C !important;
+            }
+
+            ul {
+                border-left: 1px solid #8C5A3C !important;
+            }
+        }
+    </style>
+}
+
+<div class="h-100 d-flex flex-row justify-content-between align-items-center">
+
+    <div class="position-relative d-flex flex-grow-1 flex-column justify-content-start align-items-center gap-3" style="overflow: visible;">
+        <div class="sticky-top d-flex flex-column gap-2" style="top: 0; z-index: 10;">
+            <label>Enter the URI:</label>
+
+            <input type="text"
+                id="userInput"
+                class="from-control px-2 py-1"
+            />
+
+            <span asp-validation-for="Uri" class="text-danger"></span>
+        
+            <button id="btnFetch"
+                type="button"
+                class="btnBrown"
+            >
+                See the changes
+            </button>
+        </div>
+    </div>
+
+    <div class="d-flex flex-row flex-grow-1 justify-content-between align-items-baseline">
+        <div id="listContainer" class="overflow-auto w-100 my-3 d-flex flex-column justify-content-start align-items-center">
+            <div id="placeholderContainer">
+                <span>Awaiting URI input...</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts {
+    <script>
+        document.getElementById("btnFetch").addEventListener("click", async () => {
+            const inputValue = document.getElementById("userInput").value;
+            const listContainer = document.getElementById("listContainer");
+
+            // Show temporary loading indicator
+            listContainer.innerHTML = '<div class="text-center my-3"><div class="spinner-border text-secondary" role="status"></div></div>';
+
+            const uriModelPayload = {
+                Uri: inputValue
+            };
+
+            try {
+                const response = await fetch('/Home/CheckTheChanges', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        'jsonModel': JSON.stringify(uriModelPayload)
+                    })
+                });
+
+                if (response.ok) {
+                    const htmlResult = await response.text();
+                    listContainer.innerHTML = htmlResult;
+                } else {
+                    const errorText = await response.text();
+                    listContainer.innerHTML = `<div class="alert alert-danger">Error: ${errorText || response.statusText}</div>`;
+                }
+            } catch (error) {
+                console.error("AJAX error:", error);
+                listContainer.innerHTML = '<div class="alert alert-danger">Could not reach the server.</div>';
+            }
+        });
+    </script>
+
+    <script>
+        function toggleFolderContainer(buttonElement) {
+            const targetContainer = buttonElement.nextElementSibling;
+            const iconSpan = buttonElement.querySelector(".folder-icon");
+
+            if (targetContainer && targetContainer.classList.contains("folder-content-pane")) {
+                const isCurrentlyHidden = targetContainer.classList.contains("d-none");
+
+                if (isCurrentlyHidden) {
+                    targetContainer.classList.remove("d-none");
+
+                    buttonElement.classList.replace("btn-outline-secondary", "btn-secondary");
+                    buttonElement.classList.add("text-white");
+                } else {
+                    targetContainer.classList.add("d-none");
+
+                    buttonElement.classList.replace("btn-secondary", "btn-outline-secondary");
+                    buttonElement.classList.remove("text-white");
+                }
+            }
+        }
+    </script>
+}

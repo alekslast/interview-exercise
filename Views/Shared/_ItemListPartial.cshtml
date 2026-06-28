@@ -1,0 +1,14 @@
+﻿@model List<BusinessLogic.ViewModels.FolderNodeViewModel>
+
+
+<div class="folder-tree-wrapper">
+    <h5 class="mb-3 border-bottom pb-2"><img src="~/icons/folder-icon.svg" alt="folder icon" width="20" height="20" /> Directory Structure</h5>
+    @if (Model == null || !Model.Any())
+    {
+        <div class="text-muted ps-2">No folders found in this path.</div>
+    }
+    else
+    {
+        @await Html.PartialAsync("_TreeBranchPartial", Model)
+    }
+</div>
