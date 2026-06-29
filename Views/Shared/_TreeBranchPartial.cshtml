@@ -3,6 +3,13 @@
 <ul class="list-unstyled ps-3 my-1 border-start border-secondary-subtle">
     @foreach (var folder in Model)
     {
+        var folderFile = folder.FolderLogFile;
+
+        @if (folderFile is null)
+        {
+            continue;
+        }
+
         <li class="mb-2">
             <button type="button"
                     class="btn btnBrown btn-sm d-flex align-items-center gap-2 folder-toggle-btn text-start w-100"
@@ -10,22 +17,27 @@
             >
                 <img src="~/icons/folder-icon.svg" alt="folder icon" width="20" height="20" />
 
-                <span class="fw-medium">@folder.Name</span>
+                <span class="fw-medium">@folderFile.ItemName | v.@folderFile.VersionNumber</span>
 
                 @if (
-                    folder.Files != null &&
-                    folder.Files.Any(file => file.ChangeType == BusinessLogic.ViewModels.ChangeType.Created)
+                    folderFile.ChangeType == BusinessLogic.ViewModels.ChangeType.Created
                 )
                 {
                     <span class="badge bg-success rounded-pill">Added</span>
                 }
                 
                 @if (
-                    folder.Files != null &&
-                    folder.Files.Any(file => file.ChangeType == BusinessLogic.ViewModels.ChangeType.Modified)
+                    folderFile.ChangeType == BusinessLogic.ViewModels.ChangeType.Modified
                 )
                 {
                     <span class="badge bg-primary rounded-pill">Updated</span>
+                }
+
+                @if (
+                    folderFile.ChangeType == BusinessLogic.ViewModels.ChangeType.Deleted
+                )
+                {
+                    <span class="badge bg-danger rounded-pill">Deleted</span>
                 }
             </button>
 
@@ -46,37 +58,39 @@
                     <ul class="list-unstyled ps-3 my-1 border-start border-info-subtle">
                         @foreach (var file in folder.Files)
                         {
-                            <li class="py-1 text-secondary d-flex align-items-center gap-2 small">
-                                @if (file.Type == BusinessLogic.ViewModels.ItemType.File)
-                                {
-                                    <img src="~/icons/file-icon.svg" alt="folder icon" width="20" height="20" />
-                                }
-                                else
-                                {
-                                    <img src="~/icons/folder-icon.svg" alt="folder icon" width="20" height="20" />
-                                }
-                                
-                                <span style="color: black;">@file.ItemName</span>
+                            @if (folder.SubFolders.Any(f => f.Name == file.ItemName)) continue;
 
-                                @if (
-                                    file.ChangeType == BusinessLogic.ViewModels.ChangeType.Created
-                                )
-                                {
-                                    <span class="badge bg-success rounded-pill">Added</span>
-                                }
+                                <li class="py-1 text-secondary d-flex align-items-center gap-2 small">
+                                    @if (file.Type == BusinessLogic.ViewModels.ItemType.File)
+                                    {
+                                        <img src="~/icons/file-icon.svg" alt="folder icon" width="20" height="20" />
+                                    }
+                                    else
+                                    {
+                                        <img src="~/icons/folder-icon.svg" alt="folder icon" width="20" height="20" />
+                                    }
 
-                                @if (file.ChangeType == BusinessLogic.ViewModels.ChangeType.Modified
-                                )
-                                {
-                                    <span class="badge bg-primary rounded-pill">Updated</span>
-                                }
+                                    <span style="color: black;">@file.ItemName | v.@file.VersionNumber</span>
 
-                                @if (file.ChangeType == BusinessLogic.ViewModels.ChangeType.Deleted
-                                )
-                                {
-                                    <span class="badge bg-danger rounded-pill">Deleted</span>
-                                }
-                            </li>
+                                    @if (
+                                        file.ChangeType == BusinessLogic.ViewModels.ChangeType.Created
+                                    )
+                                    {
+                                        <span class="badge bg-success rounded-pill">Added</span>
+                                    }
+
+                                    @if (file.ChangeType == BusinessLogic.ViewModels.ChangeType.Modified
+                                    )
+                                    {
+                                        <span class="badge bg-primary rounded-pill">Updated</span>
+                                    }
+
+                                    @if (file.ChangeType == BusinessLogic.ViewModels.ChangeType.Deleted
+                                    )
+                                    {
+                                        <span class="badge bg-danger rounded-pill">Deleted</span>
+                                    }
+                                </li>
                         }
                     </ul>
                 }

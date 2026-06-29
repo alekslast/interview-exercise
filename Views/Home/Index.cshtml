@@ -155,8 +155,19 @@
                     const htmlResult = await response.text();
                     listContainer.innerHTML = htmlResult;
                 } else {
-                    const errorText = await response.text();
-                    listContainer.innerHTML = `<div class="alert alert-danger">Error: ${errorText || response.statusText}</div>`;
+                    const rawErrorText = await response.text();
+                    let displayMessage = "An unexpected error occurred.";
+
+                    try {
+                        const errorJson = JSON.parse(rawErrorText);
+
+                        displayMessage = errorJson.detail || errorJson.Detail || rawErrorText;
+                    } catch (er) {
+                        displayMessage = rawErrorText || response.statusText;
+                    }
+
+                    // Render only the extracted error text string to the UI
+                    listContainer.innerHTML = `<div class="alert alert-danger">Error: ${displayMessage}</div>`;
                 }
             } catch (error) {
                 console.error("AJAX error:", error);
@@ -168,7 +179,6 @@
     <script>
         function toggleFolderContainer(buttonElement) {
             const targetContainer = buttonElement.nextElementSibling;
-            const iconSpan = buttonElement.querySelector(".folder-icon");
 
             if (targetContainer && targetContainer.classList.contains("folder-content-pane")) {
                 const isCurrentlyHidden = targetContainer.classList.contains("d-none");
